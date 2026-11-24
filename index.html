@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOESIS — Independent Web &amp; Cognitive Studio</title>
+
+  <!-- Google Fonts: Inter (Editorial UI) & JetBrains Mono (Labels & Telemetry) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- =========================================================================
+       FULL-VIEWPORT 60FPS MAGNETIC DOT MATRIX CANVAS
+       ========================================================================= -->
+  <canvas id="matrixCanvas" aria-hidden="true"></canvas>
+
+  <!-- =========================================================================
+       CANVAS FOCUS MODE EXIT BAR (Visible when Canvas Focus Mode is active)
+       ========================================================================= -->
+  <div class="canvas-exit-bar" role="region" aria-label="Canvas Focus Mode Controls">
+    <span class="canvas-exit-hint">Move cursor to bend field · Click or Space to pulse</span>
+    <button type="button" class="btn-exit-canvas" id="btnExitCanvas">Exit Canvas</button>
+  </div>
+
+  <!-- =========================================================================
+       MAIN EDITORIAL WEBSITE SHELL
+       ========================================================================= -->
+  <div class="site-shell" id="siteShell">
+
+    <!-- 1. STICKY FROSTED NAVBAR -->
+    <header class="navbar-wrap">
+      <nav class="navbar" aria-label="Primary Navigation">
+        <a href="#top" class="brand">
+          <!-- Minimalist Geometric NOESIS SVG Mark -->
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 21 7 21 17 12 22 3 17 3 7 12 2"></polygon>
+              <line x1="12" y1="22" x2="12" y2="12"></line>
+              <polyline points="21 7 12 12 3 7"></polyline>
+            </svg>
+          </span>
+          <span class="brand-text">
+            <span class="brand-name">NOESIS</span>
+            <span class="brand-tag">STUDIO</span>
+          </span>
+        </a>
+
+        <div class="nav-right">
+          <div class="nav-links" id="navLinks">
+            <a href="#projects">Projects</a>
+            <a href="#team">Team</a>
+            <a href="#contact">Contact</a>
+          </div>
+
+          <a
+            href="https://dodgwekhd-creator.github.io/LEVELING-v4.0/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="nav-cta"
+          >
+            Launch LEVELING ↗
+          </a>
+
+          <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <!-- 2. HERO SECTION -->
+      <section class="hero container">
+        <div class="status-pill reveal">
+          <span class="live-dot" aria-hidden="true"></span>
+          INDEPENDENT WEB &amp; COGNITIVE STUDIO
+        </div>
+
+        <h1 class="hero-title reveal">NOESIS</h1>
+
+        <p class="hero-subtitle reveal">
+          Precision cognitive engines, procedural systems, and clean web architecture.
+        </p>
+
+        <div class="hero-actions reveal">
+          <a href="#projects" class="btn-primary">
+            Explore Projects
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14m-7-7 7 7-7 7" />
+            </svg>
+          </a>
+          <a href="#team" class="btn-secondary">Meet the Team</a>
+        </div>
+
+        <!-- Compact Horizontal Telemetry Strip -->
+        <div class="telemetry-strip surface-card reveal" aria-label="Studio Telemetry">
+          <div class="telemetry-item"><strong>02</strong> // Core Builders</div>
+          <div class="telemetry-item"><strong>00</strong> // External Dependencies</div>
+          <div class="telemetry-item"><strong>v4.0</strong> // Flagship Live</div>
+        </div>
+      </section>
+
+      <!-- 3. PROJECTS WE ARE WORKING ON (#projects) -->
+      <section id="projects" class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">01 // PROJECTS</span>
+          <h2 class="section-title">Projects We Are Working On</h2>
+          <p class="section-desc">
+            Zero-dependency interactive systems engineered for clarity, speed, and everyday usability.
+          </p>
+        </div>
+
+        <!-- Populated dynamically from NOESIS_PROJECTS -->
+        <div class="projects-grid" id="projectsGrid"></div>
+      </section>
+
+      <!-- 4. MEET THE TEAM (#team) -->
+      <section id="team" class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">02 // THE TEAM</span>
+          <h2 class="section-title">Meet the Team</h2>
+          <p class="section-desc">
+            The builders behind NOESIS. Click either profile card to inspect focus areas and skills.
+          </p>
+        </div>
+
+        <!-- Populated dynamically from NOESIS_TEAM -->
+        <div class="team-grid" id="teamGrid"></div>
+      </section>
+
+      <!-- 5. CONTACT SECTION (#contact) — CLEAN INSTAGRAM & MAIL BUTTONS -->
+      <section id="contact" class="container">
+        <div class="contact-card surface-card reveal">
+          <span class="eyebrow">03 // CONTACT</span>
+          <h2>Get in Touch</h2>
+          <p>
+            Have feedback on LEVELING, a collaboration idea, or a project inquiry? Reach out directly.
+          </p>
+
+          <div class="contact-btn-row">
+            <!-- 1) Instagram Button (Pranika) -->
+            <a
+              href="https://instagram.com/pranika_xo_7"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="contact-btn contact-btn--instagram"
+              aria-label="Follow or message on Instagram"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+              <span>Instagram</span>
+              <span class="btn-arrow" aria-hidden="true">↗</span>
+            </a>
+
+            <!-- 2) Mail Button -->
+            <a
+              href="mailto:priya22635@gmail.com"
+              class="contact-btn contact-btn--mail"
+              aria-label="Send an email to NOESIS"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+              <span>Mail</span>
+              <span class="btn-arrow" aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 6. MINIMALIST SINGLE-ROW FOOTER -->
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div>© 2026 NOESIS — Built with zero dependencies.</div>
+        <div class="footer-links">
+          <a href="#projects">Projects</a>
+          <a href="#team">Team</a>
+          <a href="#contact">Contact</a>
+          <a href="#top">Top ↑</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- =========================================================================
+       TEAM MEMBER DETAIL MODAL (Strictly no email addresses)
+       ========================================================================= -->
+  <div class="modal-backdrop" id="memberModal" role="dialog" aria-modal="true" aria-labelledby="modalMemberName">
+    <div class="modal-card">
+      <button type="button" class="modal-close" id="modalCloseBtn" aria-label="Close profile modal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       FLOATING MAGNETIC DOT MATRIX CONTROL PILL (Bottom-Right)
+       ========================================================================= -->
+  <div class="matrix-pill" role="toolbar" aria-label="Magnetic Dot Matrix Controls">
+    <div class="pill-group" id="modeControls">
+      <button type="button" class="ctrl-btn active" data-mode="repel">Repel</button>
+      <button type="button" class="ctrl-btn" data-mode="attract">Attract</button>
+      <button type="button" class="ctrl-btn" data-mode="wave">Wave</button>
+    </div>
+
+    <div class="pill-group" id="shapeControls">
+      <button type="button" class="ctrl-btn active" data-shape="dots" title="Micro-Dots">Dots •</button>
+      <button type="button" class="ctrl-btn" data-shape="cross" title="Crosshairs">Cross +</button>
+    </div>
+
+    <button type="button" class="ctrl-btn" id="btnPulse" title="Emit Radial Shockwave (Space)">Pulse</button>
+    <button type="button" class="ctrl-btn" id="btnFocusCanvas" title="Fade UI to play with Magnetic Matrix">Canvas</button>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
