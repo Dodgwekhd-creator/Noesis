@@ -2,8 +2,6 @@
   'use strict';
 
   // === EDIT NOESIS DATA HERE ===
-  const NOESIS_CONTACT_EMAIL = 'priya22635@gmail.com';
-
   const NOESIS_PROJECTS = [
     {
       id: 'leveling-v4',
@@ -15,8 +13,7 @@
       description:
         'A zero-dependency, single-file cognitive training engine and procedural puzzle web app built with HTML5, CSS3, and Vanilla JavaScript.',
       pills: ['20 Campaign Levels', '12 Practice Archetypes', 'Review Queue', 'Zero Dependencies'],
-      liveUrl: 'https://dodgwekhd-creator.github.io/LEVELING-v4.0/',
-      repoUrl: 'https://github.com/Dodgwekhd-creator/LEVELING-v4.0'
+      statusLabel: 'Active Flagship Release'
     },
     {
       id: 'project-02',
@@ -46,32 +43,26 @@
 
   const NOESIS_TEAM = [
     {
-      id: 'pranay-kanojia',
-      monogram: 'PK',
+      id: 'builder-01',
+      monogram: '01',
       monogramClass: 'monogram-indigo',
-      name: 'Pranay Kanojia',
+      name: 'Builder 01',
       role: 'Founder & Lead Developer',
       bio: 'Architects zero-dependency web applications, procedural logic engines, and interactive cognitive systems from the ground up.',
       focusAreas:
         'Deterministic state machines, procedural puzzle generation, zero-framework Vanilla JS performance, and offline-first web tools.',
-      skills: ['HTML5 / CSS3', 'Vanilla JS', 'Procedural Systems', 'Interactive Engines'],
-      linkType: 'github',
-      linkUrl: 'https://github.com/Dodgwekhd-creator',
-      linkLabel: 'GitHub · Dodgwekhd-creator'
+      skills: ['HTML5 / CSS3', 'Vanilla JS', 'Procedural Systems', 'Interactive Engines']
     },
     {
-      id: 'pranika',
-      monogram: 'PR',
+      id: 'builder-02',
+      monogram: '02',
       monogramClass: 'monogram-violet',
-      name: 'Pranika',
+      name: 'Builder 02',
       role: 'Co-Founder & Lead Web Designer',
       bio: 'Shapes visual direction, modern interface layouts, and cohesive user experiences across every NOESIS web build.',
       focusAreas:
         'Editorial web aesthetics, clean typography systems, responsive layout craft, and intuitive user interface design.',
-      skills: ['Web Design', 'UI / UX', 'Visual Systems', 'Responsive Layouts'],
-      linkType: 'instagram',
-      linkUrl: 'https://instagram.com/pranika_xo_7',
-      linkLabel: 'Instagram · @pranika_xo_7'
+      skills: ['Web Design', 'UI / UX', 'Visual Systems', 'Responsive Layouts']
     }
   ];
 
@@ -80,13 +71,6 @@
    * ======================================================================= */
   const LEVELING_BOLT_SVG =
     '<svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>';
-
-  const SOCIAL_SVGS = {
-    github:
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55v-1.94c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.38-5.26 5.67.42.36.79 1.07.79 2.16v3.2c0 .31.21.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>',
-    instagram:
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>'
-  };
 
   /* =======================================================================
    * 2. RENDER PROJECTS & TEAM ROSTER + MODAL
@@ -106,9 +90,9 @@
 
       const footerHTML = p.flagship
         ? `
-          <div class="project-actions">
-            <a href="${p.liveUrl}" target="_blank" rel="noopener noreferrer" class="btn-card-primary">Launch Live Demo ↗</a>
-            <a href="${p.repoUrl}" target="_blank" rel="noopener noreferrer" class="btn-card-secondary">GitHub Repo</a>
+          <div class="upcoming-status" style="color:#047857;border-top-style:solid;">
+            <span>●</span>
+            <span>${p.statusLabel}</span>
           </div>
         `
         : `
@@ -154,18 +138,6 @@
           <div class="pill-list">
             ${m.skills.map((s) => `<span class="tag-pill">${s}</span>`).join('')}
           </div>
-        </div>
-        <div class="member-footer">
-          <a
-            href="${m.linkUrl}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="member-link-btn"
-            onclick="event.stopPropagation()"
-          >
-            ${SOCIAL_SVGS[m.linkType]}
-            <span>${m.linkLabel}</span>
-          </a>
         </div>
       </article>
     `).join('');
@@ -214,12 +186,6 @@
       <div class="pill-list" style="margin-top:1.15rem;">
         ${member.skills.map((s) => `<span class="tag-pill">${s}</span>`).join('')}
       </div>
-      <div style="margin-top:1.35rem;padding-top:1rem;border-top:1px solid var(--border-default);">
-        <a href="${member.linkUrl}" target="_blank" rel="noopener noreferrer" class="member-link-btn">
-          ${SOCIAL_SVGS[member.linkType]}
-          <span>${member.linkLabel}</span>
-        </a>
-      </div>
     `;
     memberModal.classList.add('open');
   }
@@ -234,7 +200,7 @@
   });
 
   /* =======================================================================
-   * 3. TOAST, CLIPBOARD COPY, MOBILE NAV & SCROLL REVEAL
+   * 3. TOAST, MOBILE NAV & SCROLL REVEAL
    * ======================================================================= */
   const toastEl = document.getElementById('toast');
   let toastTimer = null;
@@ -522,7 +488,6 @@
 
     if (isCross) {
       ctx.lineCap = 'round';
-      // Draw in 16 color buckets or direct crisp strokes
       for (let i = 0; i < n; i++) {
         const e = energy[i];
         const cIdx = Math.min(COLOR_STEPS - 1, (e * (COLOR_STEPS - 1) + 0.5) | 0);
@@ -627,7 +592,7 @@
   window.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     const hitInteractive = e.target.closest(
-      'a, button, .member-card, .project-card, .contact-card, .navbar-wrap, .matrix-pill, .canvas-exit-bar, .modal-card'
+      'a, button, .member-card, .project-card, .navbar-wrap, .matrix-pill, .canvas-exit-bar, .modal-card'
     );
     if (!hitInteractive || matrix.focusMode) {
       if (!e.target.closest('.matrix-pill, .canvas-exit-bar')) {
@@ -645,7 +610,7 @@
         pointer.y = t.clientY;
         pointer.active = true;
         const hitInteractive = e.target.closest(
-          'a, button, .member-card, .project-card, .contact-card, .navbar-wrap, .matrix-pill, .canvas-exit-bar, .modal-card'
+          'a, button, .member-card, .project-card, .navbar-wrap, .matrix-pill, .canvas-exit-bar, .modal-card'
         );
         if (!hitInteractive || matrix.focusMode) {
           if (!e.target.closest('.matrix-pill, .canvas-exit-bar')) {
