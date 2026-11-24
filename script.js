@@ -1,6 +1,11 @@
 (function () {
   'use strict';
 
+  /* =======================================================================
+   * CHECK REDUCED MOTION PREFERENCE
+   * ======================================================================= */
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   // === EDIT NOESIS DATA HERE ===
   const NOESIS_PROJECTS = [
     {
@@ -82,7 +87,7 @@
 
   function renderProjects() {
     if (!projectsGrid) return;
-    projectsGrid.innerHTML = NOESIS_PROJECTS.map((p) => {
+    projectsGrid.innerHTML = NOESIS_PROJECTS.map((p, idx) => {
       const cardClass = p.flagship ? 'project-card surface-card flagship reveal' : 'project-card surface-card upcoming reveal';
       const iconHTML = p.hasLightningIcon
         ? `<span class="leveling-icon" aria-hidden="true">${LEVELING_BOLT_SVG}</span>`
@@ -103,7 +108,7 @@
         `;
 
       return `
-        <article class="${cardClass}">
+        <article class="${cardClass}" data-reveal-delay="${idx}">
           <div>
             <div class="project-top">
               <span class="project-badge ${p.badgeClass}">${p.badge}</span>
@@ -125,8 +130,8 @@
 
   function renderTeam() {
     if (!teamGrid) return;
-    teamGrid.innerHTML = NOESIS_TEAM.map((m) => `
-      <article class="member-card surface-card reveal" data-member-id="${m.id}" tabindex="0" role="button" aria-label="View details for ${m.name}">
+    teamGrid.innerHTML = NOESIS_TEAM.map((m, idx) => `
+      <article class="member-card surface-card reveal" data-member-id="${m.id}" data-reveal-delay="${idx}" tabindex="0" role="button" aria-label="View details for ${m.name}">
         <div>
           <div class="member-header">
             <div class="monogram ${m.monogramClass}">${m.monogram}</div>
@@ -142,22 +147,10 @@
       </article>
     `).join('');
 
-    // Subtle 3D tilt hover & modal click wiring
+    // 3D tilt + spotlight hover & modal click wiring
     teamGrid.querySelectorAll('.member-card').forEach((card) => {
       const member = NOESIS_TEAM.find((m) => m.id === card.dataset.memberId);
-
-      card.addEventListener('pointermove', (e) => {
-        if (e.pointerType === 'touch') return;
-        const rect = card.getBoundingClientRect();
-        const nx = (e.clientX - rect.left) / rect.width - 0.5;
-        const ny = (e.clientY - rect.top) / rect.height - 0.5;
-        card.style.transform = `rotateX(${(-ny * 6).toFixed(2)}deg) rotateY(${(nx * 6).toFixed(2)}deg) translateY(-4px)`;
-      });
-
-      card.addEventListener('pointerleave', () => {
-        card.style.transform = '';
-      });
-
+      setupCardTilt(card);
       card.addEventListener('click', () => openMemberModal(member));
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -165,6 +158,27 @@
           openMemberModal(member);
         }
       });
+    });
+  }
+
+  /* Shared 3D tilt + spotlight for project-card and member-card */
+  function setupCardTilt(card) {
+    card.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch' || prefersReducedMotion) return;
+      const rect = card.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / rect.width;
+      const ny = (e.clientY - rect.top) / rect.height;
+      card.style.setProperty('--mx', nx.toFixed(3));
+      card.style.setProperty('--my', ny.toFixed(3));
+      const rx = -(ny - 0.5) * 8;
+      const ry = (nx - 0.5) * 8;
+      card.style.transform = `perspective(800px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateY(-4px)`;
+    });
+
+    card.addEventListener('pointerleave', () => {
+      card.style.transform = '';
+      card.style.setProperty('--mx', '0.5');
+      card.style.setProperty('--my', '0.5');
     });
   }
 
@@ -188,6 +202,7 @@
       </div>
     `;
     memberModal.classList.add('open');
+    spawnClickSparks(window.innerWidth * 0.5, window.innerHeight * 0.5);
   }
 
   function closeMemberModal() {
@@ -200,7 +215,7 @@
   });
 
   /* =======================================================================
-   * 3. TOAST, MOBILE NAV & SCROLL REVEAL
+   * 3. TOAST, MOBILE NAV, SCROLL PROGRESS & REVEAL
    * ======================================================================= */
   const toastEl = document.getElementById('toast');
   let toastTimer = null;
@@ -226,7 +241,17 @@
     });
   });
 
-  // IntersectionObserver Fade-Up Reveals
+  // Scroll Progress Bar
+  const scrollProgressEl = document.getElementById('scrollProgress');
+  function updateScrollProgress() {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    scrollProgressEl.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateScrollProgress, { passive: true });
+
+  // IntersectionObserver Fade-Up Reveals with staggered delays
   function initScrollReveal() {
     const revealEls = document.querySelectorAll('.reveal');
     if (!('IntersectionObserver' in window)) {
@@ -237,18 +262,46 @@
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
+            const delay = parseInt(entry.target.dataset.revealDelay || '0', 10);
+            const ms = delay * 100;
+            if (ms > 0) {
+              setTimeout(() => entry.target.classList.add('is-visible'), ms);
+            } else {
+              entry.target.classList.add('is-visible');
+            }
             observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.08 }
     );
     revealEls.forEach((el) => observer.observe(el));
   }
 
   /* =======================================================================
-   * 4. 60FPS "MAGNETIC DOT MATRIX" HTML5 CANVAS ENGINE (Typed Arrays)
+   * 4. MAGNETIC BUTTON HOVER EFFECT
+   * ======================================================================= */
+  function initMagneticButtons() {
+    if (prefersReducedMotion) return;
+    document.querySelectorAll('.magnetic-btn').forEach((btn) => {
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const cx = rect.left + rect.width * 0.5;
+        const cy = rect.top + rect.height * 0.5;
+        const dx = (e.clientX - cx) * 0.28;
+        const dy = (e.clientY - cy) * 0.28;
+        btn.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(1.04)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = '';
+      });
+    });
+  }
+
+  /* =======================================================================
+   * 5. 60FPS ENHANCED MAGNETIC DOT MATRIX HTML5 CANVAS ENGINE
+   *    — Harmonic wave drift, iridescent multi-color gradient,
+   *      cursor repulsion, click ripples + sparkling particle bursts
    * ======================================================================= */
   const canvas = document.getElementById('matrixCanvas');
   const ctx = canvas.getContext('2d');
@@ -266,9 +319,6 @@
     vx: new Float32Array(0),
     vy: new Float32Array(0),
     energy: new Float32Array(0),
-    mode: 'repel',   // 'repel' | 'attract' | 'wave'
-    shape: 'dots',   // 'dots' | 'cross'
-    focusMode: false,
     time: 0
   };
 
@@ -278,22 +328,35 @@
     active: false
   };
 
-  // Active radial shockwave ripples: { x, y, radius, maxRadius, speed, strength }
+  // Active radial shockwave ripples
   const ripples = [];
 
-  // Precomputed 16-step color ramp from subtle slate (#cbd5e1) to crisp indigo (#4f46e5)
-  const COLOR_STEPS = 16;
+  // Sparkling click-burst particles
+  const sparks = [];
+
+  // Iridescent multi-color ramp: slate -> indigo -> violet -> cyan -> pink
+  const COLOR_STEPS = 24;
   const COLOR_RAMP = new Array(COLOR_STEPS);
   (function buildColorRamp() {
-    const sR = 203, sG = 213, sB = 225; // #cbd5e1
-    const eR = 79,  eG = 70,  eB = 229; // #4f46e5
+    const keyframes = [
+      { r: 203, g: 213, b: 225, a: 0.6 },   // slate #cbd5e1
+      { r: 79,  g: 70,  b: 229, a: 0.82 },   // indigo #4f46e5
+      { r: 139, g: 92,  b: 246, a: 0.88 },   // violet #8b5cf6
+      { r: 6,   g: 182, b: 212, a: 0.92 },   // cyan #06b6d4
+      { r: 236, g: 72,  b: 153, a: 0.96 }    // pink #ec4899
+    ];
     for (let i = 0; i < COLOR_STEPS; i++) {
       const t = i / (COLOR_STEPS - 1);
-      const r = Math.round(sR + (eR - sR) * t);
-      const g = Math.round(sG + (eG - sG) * t);
-      const b = Math.round(sB + (eB - sB) * t);
-      const a = (0.72 + t * 0.28).toFixed(2);
-      COLOR_RAMP[i] = `rgba(${r},${g},${b},${a})`;
+      const seg = t * (keyframes.length - 1);
+      const idx = Math.min(keyframes.length - 2, Math.floor(seg));
+      const lt = seg - idx;
+      const a = keyframes[idx];
+      const b = keyframes[idx + 1];
+      const r = Math.round(a.r + (b.r - a.r) * lt);
+      const g = Math.round(a.g + (b.g - a.g) * lt);
+      const bl = Math.round(a.b + (b.b - a.b) * lt);
+      const alpha = (a.a + (b.a - a.a) * lt).toFixed(2);
+      COLOR_RAMP[i] = `rgba(${r},${g},${bl},${alpha})`;
     }
   })();
 
@@ -306,7 +369,6 @@
     canvas.height = Math.floor(matrix.height * matrix.dpr);
     ctx.setTransform(matrix.dpr, 0, 0, matrix.dpr, 0, 0);
 
-    // Responsive spacing (~32-36px) so mobile & desktop both feel crisp and balanced
     matrix.spacing = matrix.width < 640 ? 32 : 35;
 
     const cols = Math.floor(matrix.width / matrix.spacing) + 1;
@@ -352,8 +414,28 @@
     });
   }
 
+  /* Spawn a burst of micro-sparks at a point */
+  function spawnClickSparks(sx, sy) {
+    const count = 8 + Math.floor(Math.random() * 5); // 8-12
+    const sparkColors = ['#4f46e5', '#8b5cf6', '#06b6d4', '#ec4899', '#f59e0b', '#10b981'];
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.6;
+      const speed = 2.5 + Math.random() * 4;
+      sparks.push({
+        x: sx,
+        y: sy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1.0,
+        decay: 0.018 + Math.random() * 0.012,
+        size: 1.8 + Math.random() * 2.2,
+        color: sparkColors[Math.floor(Math.random() * sparkColors.length)]
+      });
+    }
+  }
+
   function stepMatrixPhysics() {
-    matrix.time += 0.032;
+    matrix.time += 0.016;
 
     // Advance shockwave ripples
     for (let i = ripples.length - 1; i >= 0; i--) {
@@ -362,6 +444,20 @@
       rp.strength = Math.max(0, 1 - rp.radius / rp.maxRadius);
       if (rp.radius >= rp.maxRadius) {
         ripples.splice(i, 1);
+      }
+    }
+
+    // Advance sparks
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const sp = sparks[i];
+      sp.x += sp.vx;
+      sp.y += sp.vy;
+      sp.vy += 0.08; // gravity
+      sp.vx *= 0.985;
+      sp.vy *= 0.985;
+      sp.life -= sp.decay;
+      if (sp.life <= 0) {
+        sparks.splice(i, 1);
       }
     }
 
@@ -374,17 +470,14 @@
     const vy = matrix.vy;
     const energy = matrix.energy;
 
-    const mode = matrix.mode;
-    const isWave = mode === 'wave';
-    const isAttract = mode === 'attract';
     const pActive = pointer.active;
     const mx = pointer.x;
     const my = pointer.y;
-    const radius = matrix.focusMode ? 225 : 175;
+    const radius = 185;
     const radiusSq = radius * radius;
     const rippleCount = ripples.length;
+    const time = matrix.time;
 
-    // Spring-damper tuning for crisp magnetic iron-filing feel
     const stiffness = 0.088;
     const damping = 0.79;
 
@@ -397,48 +490,32 @@
       let pvy = vy[i];
       let eTarget = 0;
 
-      // 1. Target home (with optional gentle harmonic wave in Wave mode)
-      let targetX = homeX;
-      let targetY = homeY;
-      if (isWave) {
-        const wavePhase = homeX * 0.014 + homeY * 0.011 - matrix.time * 1.45;
-        const s = Math.sin(wavePhase);
-        targetX += Math.cos(wavePhase * 0.7) * 5.5;
-        targetY += s * 7.5;
-        eTarget = Math.max(eTarget, (s + 1) * 0.24);
-      }
+      // 1. Subtle organic harmonic wave drift (always on)
+      const wavePhase = homeX * 0.008 + homeY * 0.006 - time * 0.6;
+      const waveDx = Math.cos(wavePhase * 0.7 + time * 0.3) * 2.2;
+      const waveDy = Math.sin(wavePhase) * 3.0;
+      const targetX = homeX + waveDx;
+      const targetY = homeY + waveDy;
+      const waveE = (Math.sin(wavePhase) + 1) * 0.12;
+      eTarget = Math.max(eTarget, waveE);
 
       // 2. Spring restoring force toward target
       pvx += (targetX - cx) * stiffness;
       pvy += (targetY - cy) * stiffness;
 
-      // 3. Cursor magnetic field interaction
+      // 3. Cursor magnetic repulsion
       if (pActive) {
         const dx = cx - mx;
         const dy = cy - my;
         const distSq = dx * dx + dy * dy;
-
         if (distSq < radiusSq && distSq > 0.01) {
           const dist = Math.sqrt(distSq);
           const falloff = 1 - dist / radius;
           const smooth = falloff * falloff;
           const invD = 1 / dist;
-
-          if (isAttract) {
-            const pull = smooth * 5.2;
-            pvx -= dx * invD * pull;
-            pvy -= dy * invD * pull;
-          } else if (isWave) {
-            const swirl = smooth * 3.8;
-            pvx += (-dy * invD) * swirl + (dx * invD) * (smooth * 2.2);
-            pvy += (dx * invD) * swirl + (dy * invD) * (smooth * 2.2);
-          } else {
-            // Default: Repel
-            const push = smooth * 6.4;
-            pvx += dx * invD * push;
-            pvy += dy * invD * push;
-          }
-
+          const push = smooth * 6.4;
+          pvx += dx * invD * push;
+          pvy += dy * invD * push;
           eTarget = Math.max(eTarget, Math.min(1, falloff * 1.35));
         }
       }
@@ -451,7 +528,6 @@
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         const band = Math.abs(dist - rp.radius);
         const bandWidth = 54;
-
         if (band < bandWidth) {
           const wave = (1 - band / bandWidth) * rp.strength;
           const impulse = wave * 7.2;
@@ -472,8 +548,7 @@
       vx[i] = pvx;
       vy[i] = pvy;
 
-      // Smooth energy interpolation for color & scale transitions
-      energy[i] += (eTarget - energy[i]) * 0.2;
+      energy[i] += (eTarget - energy[i]) * 0.18;
     }
   }
 
@@ -484,38 +559,16 @@
     const x = matrix.x;
     const y = matrix.y;
     const energy = matrix.energy;
-    const isCross = matrix.shape === 'cross';
 
-    if (isCross) {
-      ctx.lineCap = 'round';
-      for (let i = 0; i < n; i++) {
-        const e = energy[i];
-        const cIdx = Math.min(COLOR_STEPS - 1, (e * (COLOR_STEPS - 1) + 0.5) | 0);
-        const half = 2.6 + e * 2.4;
-        const px = x[i];
-        const py = y[i];
-
-        ctx.strokeStyle = COLOR_RAMP[cIdx];
-        ctx.lineWidth = 1.15 + e * 0.65;
-        ctx.beginPath();
-        ctx.moveTo(px - half, py);
-        ctx.lineTo(px + half, py);
-        ctx.moveTo(px, py - half);
-        ctx.lineTo(px, py + half);
-        ctx.stroke();
-      }
-    } else {
-      // Crisp micro-dots
-      for (let i = 0; i < n; i++) {
-        const e = energy[i];
-        const cIdx = Math.min(COLOR_STEPS - 1, (e * (COLOR_STEPS - 1) + 0.5) | 0);
-        const rad = 1.55 + e * 2.05;
-
-        ctx.fillStyle = COLOR_RAMP[cIdx];
-        ctx.beginPath();
-        ctx.arc(x[i], y[i], rad, 0, Math.PI * 2);
-        ctx.fill();
-      }
+    // Crisp micro-dots with iridescent color
+    for (let i = 0; i < n; i++) {
+      const e = energy[i];
+      const cIdx = Math.min(COLOR_STEPS - 1, (e * (COLOR_STEPS - 1) + 0.5) | 0);
+      const rad = 1.55 + e * 2.05;
+      ctx.fillStyle = COLOR_RAMP[cIdx];
+      ctx.beginPath();
+      ctx.arc(x[i], y[i], rad, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     // Subtle visual ring for active ripples
@@ -527,58 +580,30 @@
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
+
+    // Render sparks
+    for (let i = 0; i < sparks.length; i++) {
+      const sp = sparks[i];
+      ctx.globalAlpha = sp.life;
+      ctx.fillStyle = sp.color;
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, sp.size * sp.life, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
   }
 
   function animateMatrix() {
-    stepMatrixPhysics();
-    renderMatrix();
+    if (!prefersReducedMotion) {
+      stepMatrixPhysics();
+      renderMatrix();
+    }
     requestAnimationFrame(animateMatrix);
   }
 
   /* =======================================================================
-   * 5. CONTROL PILL, CANVAS FOCUS MODE & INPUT LISTENERS
+   * 6. INPUT LISTENERS — Pointer, touch, keyboard
    * ======================================================================= */
-  const btnFocusCanvas = document.getElementById('btnFocusCanvas');
-  const btnExitCanvas = document.getElementById('btnExitCanvas');
-
-  function setCanvasFocus(enabled) {
-    matrix.focusMode = enabled;
-    document.body.classList.toggle('canvas-focus', enabled);
-    btnFocusCanvas.classList.toggle('focus-active', enabled);
-    btnFocusCanvas.textContent = enabled ? 'Exit' : 'Canvas';
-    if (enabled) {
-      closeMemberModal();
-      emitRipple(matrix.width * 0.5, matrix.height * 0.5);
-    }
-  }
-
-  btnFocusCanvas.addEventListener('click', () => setCanvasFocus(!matrix.focusMode));
-  btnExitCanvas.addEventListener('click', () => setCanvasFocus(false));
-
-  // Mode toggles: Repel | Attract | Wave
-  document.querySelectorAll('#modeControls .ctrl-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      matrix.mode = btn.dataset.mode;
-      document.querySelectorAll('#modeControls .ctrl-btn').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-
-  // Shape toggles: Dots (•) | Crosshairs (+)
-  document.querySelectorAll('#shapeControls .ctrl-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      matrix.shape = btn.dataset.shape;
-      document.querySelectorAll('#shapeControls .ctrl-btn').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-
-  // Pulse button
-  document.getElementById('btnPulse').addEventListener('click', () => {
-    emitRipple(matrix.width * 0.5, matrix.height * 0.5);
-  });
-
-  // Window pointer & touch tracking (canvas has pointer-events: none)
   window.addEventListener('mousemove', (e) => {
     pointer.x = e.clientX;
     pointer.y = e.clientY;
@@ -592,12 +617,20 @@
   window.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     const hitInteractive = e.target.closest(
-      'a, button, .member-card, .project-card, .navbar-wrap, .matrix-pill, .canvas-exit-bar, .modal-card'
+      'a, button, .member-card, .project-card, .navbar-wrap, .modal-card'
     );
-    if (!hitInteractive || matrix.focusMode) {
-      if (!e.target.closest('.matrix-pill, .canvas-exit-bar')) {
-        emitRipple(e.clientX, e.clientY);
-      }
+    if (!hitInteractive) {
+      emitRipple(e.clientX, e.clientY);
+      spawnClickSparks(e.clientX, e.clientY);
+    }
+  });
+
+  // Click sparks on CTA buttons
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-primary, .btn-secondary, .btn-playground, .nav-cta');
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      spawnClickSparks(rect.left + rect.width * 0.5, rect.top + rect.height * 0.5);
     }
   });
 
@@ -610,12 +643,11 @@
         pointer.y = t.clientY;
         pointer.active = true;
         const hitInteractive = e.target.closest(
-          'a, button, .member-card, .project-card, .navbar-wrap, .matrix-pill, .canvas-exit-bar, .modal-card'
+          'a, button, .member-card, .project-card, .navbar-wrap, .modal-card'
         );
-        if (!hitInteractive || matrix.focusMode) {
-          if (!e.target.closest('.matrix-pill, .canvas-exit-bar')) {
-            emitRipple(t.clientX, t.clientY);
-          }
+        if (!hitInteractive) {
+          emitRipple(t.clientX, t.clientY);
+          spawnClickSparks(t.clientX, t.clientY);
         }
       }
     },
@@ -639,13 +671,11 @@
     pointer.active = false;
   });
 
-  // Keyboard shortcuts: Esc closes modal / exits canvas mode; Space pulses dot matrix
+  // Keyboard shortcuts
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if (memberModal.classList.contains('open')) {
         closeMemberModal();
-      } else if (matrix.focusMode) {
-        setCanvasFocus(false);
       }
       return;
     }
@@ -661,6 +691,10 @@
       if (!isControl && !memberModal.classList.contains('open')) {
         e.preventDefault();
         emitRipple(pointer.active ? pointer.x : undefined, pointer.active ? pointer.y : undefined);
+        spawnClickSparks(
+          pointer.active ? pointer.x : matrix.width * 0.5,
+          pointer.active ? pointer.y : matrix.height * 0.5
+        );
       }
     }
   });
@@ -668,13 +702,25 @@
   window.addEventListener('resize', buildMatrixGrid);
 
   /* =======================================================================
-   * 6. BOOTSTRAP ON WINDOW LOAD
+   * 7. WIRE UP PROJECT CARD TILTS AFTER RENDER
+   * ======================================================================= */
+  function wireProjectCards() {
+    document.querySelectorAll('.project-card').forEach((card) => {
+      setupCardTilt(card);
+    });
+  }
+
+  /* =======================================================================
+   * 8. BOOTSTRAP ON WINDOW LOAD
    * ======================================================================= */
   window.addEventListener('load', () => {
     renderProjects();
     renderTeam();
+    wireProjectCards();
     initScrollReveal();
+    initMagneticButtons();
     buildMatrixGrid();
+    updateScrollProgress();
     requestAnimationFrame(animateMatrix);
   });
 })();

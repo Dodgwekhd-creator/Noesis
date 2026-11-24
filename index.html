@@ -15,17 +15,14 @@
 <body>
 
   <!-- =========================================================================
+       SCROLL PROGRESS BAR
+       ========================================================================= -->
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <!-- =========================================================================
        FULL-VIEWPORT 60FPS MAGNETIC DOT MATRIX CANVAS
        ========================================================================= -->
   <canvas id="matrixCanvas" aria-hidden="true"></canvas>
-
-  <!-- =========================================================================
-       CANVAS FOCUS MODE EXIT BAR (Visible when Canvas Focus Mode is active)
-       ========================================================================= -->
-  <div class="canvas-exit-bar" role="region" aria-label="Canvas Focus Mode Controls">
-    <span class="canvas-exit-hint">Move cursor to bend field · Click or Space to pulse</span>
-    <button type="button" class="btn-exit-canvas" id="btnExitCanvas">Exit Canvas</button>
-  </div>
 
   <!-- =========================================================================
        MAIN EDITORIAL WEBSITE SHELL
@@ -56,8 +53,8 @@
             <a href="#team">Team</a>
           </div>
 
-          <a href="#projects" class="nav-cta">
-            Explore Builds ↓
+          <a href="playground.html" class="nav-cta magnetic-btn">
+            Animation Playground ✦
           </a>
 
           <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false">
@@ -72,29 +69,32 @@
     <main id="top">
       <!-- 2. HERO SECTION -->
       <section class="hero container">
-        <div class="status-pill reveal">
+        <div class="status-pill reveal" data-reveal-delay="0">
           <span class="live-dot" aria-hidden="true"></span>
           INDEPENDENT WEB &amp; COGNITIVE STUDIO
         </div>
 
-        <h1 class="hero-title reveal">NOESIS</h1>
+        <h1 class="hero-title reveal" data-reveal-delay="1">NOESIS</h1>
 
-        <p class="hero-subtitle reveal">
+        <p class="hero-subtitle reveal" data-reveal-delay="2">
           Precision cognitive engines, procedural systems, and clean web architecture.
         </p>
 
-        <div class="hero-actions reveal">
-          <a href="#projects" class="btn-primary">
+        <div class="hero-actions reveal" data-reveal-delay="3">
+          <a href="#projects" class="btn-primary magnetic-btn">
             Explore Projects
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M5 12h14m-7-7 7 7-7 7" />
             </svg>
           </a>
-          <a href="#team" class="btn-secondary">Meet the Team</a>
+          <a href="#team" class="btn-secondary magnetic-btn">Meet the Team</a>
+          <a href="playground.html" class="btn-playground magnetic-btn">
+            ✦ Animation Playground
+          </a>
         </div>
 
         <!-- Compact Horizontal Telemetry Strip -->
-        <div class="telemetry-strip surface-card reveal" aria-label="Studio Telemetry">
+        <div class="telemetry-strip surface-card reveal" data-reveal-delay="4" aria-label="Studio Telemetry">
           <div class="telemetry-item"><strong>02</strong> // Core Builders</div>
           <div class="telemetry-item"><strong>00</strong> // External Dependencies</div>
           <div class="telemetry-item"><strong>v4.0</strong> // Flagship Live</div>
@@ -137,6 +137,7 @@
         <div class="footer-links">
           <a href="#projects">Projects</a>
           <a href="#team">Team</a>
+          <a href="playground.html">Playground</a>
           <a href="#top">Top ↑</a>
         </div>
       </div>
@@ -155,25 +156,6 @@
       </button>
       <div id="modalBody"></div>
     </div>
-  </div>
-
-  <!-- =========================================================================
-       FLOATING MAGNETIC DOT MATRIX CONTROL PILL (Bottom-Right)
-       ========================================================================= -->
-  <div class="matrix-pill" role="toolbar" aria-label="Magnetic Dot Matrix Controls">
-    <div class="pill-group" id="modeControls">
-      <button type="button" class="ctrl-btn active" data-mode="repel">Repel</button>
-      <button type="button" class="ctrl-btn" data-mode="attract">Attract</button>
-      <button type="button" class="ctrl-btn" data-mode="wave">Wave</button>
-    </div>
-
-    <div class="pill-group" id="shapeControls">
-      <button type="button" class="ctrl-btn active" data-shape="dots" title="Micro-Dots">Dots •</button>
-      <button type="button" class="ctrl-btn" data-shape="cross" title="Crosshairs">Cross +</button>
-    </div>
-
-    <button type="button" class="ctrl-btn" id="btnPulse" title="Emit Radial Shockwave (Space)">Pulse</button>
-    <button type="button" class="ctrl-btn" id="btnFocusCanvas" title="Fade UI to play with Magnetic Matrix">Canvas</button>
   </div>
 
   <!-- TOAST NOTIFICATION -->

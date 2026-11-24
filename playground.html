@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>NOESIS — Animation Playground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="playground.css" />
+</head>
+<body>
+  <canvas id="pgCanvas" aria-hidden="true"></canvas>
+
+  <!-- Back pill -->
+  <a href="index.html" class="back-pill" id="backPill">← Back to NOESIS</a>
+
+  <!-- Control Dock -->
+  <div class="dock" id="dock">
+    <div class="dock-inner">
+      <!-- Mode selector -->
+      <div class="dock-group dock-modes" id="dockModes">
+        <button type="button" class="dock-btn active" data-mode="gravity" title="Gravity Forge (1)">Gravity Forge</button>
+        <button type="button" class="dock-btn" data-mode="neon" title="Neon Flow (2)">Neon Flow</button>
+        <button type="button" class="dock-btn" data-mode="prism" title="Prism Matrix (3)">Prism Matrix</button>
+        <button type="button" class="dock-btn" data-mode="fireworks" title="Spark Fireworks (4)">Fireworks</button>
+      </div>
+
+      <div class="dock-sep"></div>
+
+      <!-- Palette cycler -->
+      <div class="dock-group">
+        <button type="button" class="dock-btn" id="btnPalette" title="Cycle Color Palette">Prism</button>
+      </div>
+
+      <div class="dock-sep"></div>
+
+      <!-- Action buttons -->
+      <div class="dock-group">
+        <button type="button" class="dock-btn accent" id="btnBurst" title="Burst (Space)">Burst</button>
+        <button type="button" class="dock-btn" id="btnClear" title="Clear (C)">Clear</button>
+      </div>
+
+      <div class="dock-sep"></div>
+
+      <!-- Audio toggle -->
+      <div class="dock-group">
+        <button type="button" class="dock-btn" id="btnAudio" title="Toggle Synth Audio">🔇 Audio</button>
+      </div>
+
+      <div class="dock-sep"></div>
+
+      <!-- Hide UI -->
+      <div class="dock-group">
+        <button type="button" class="dock-btn" id="btnHide" title="Hide UI (H)">Hide UI</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tiny restore pill when UI is hidden -->
+  <div class="restore-pill hidden" id="restorePill">tap or press H</div>
+
+  <script src="playground.js"></script>
+</body>
+</html>
